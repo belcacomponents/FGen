@@ -1,2 +1,2 @@
 # FGen
-File generator for Dios CMS
+File generator / converter for Dios CMS
