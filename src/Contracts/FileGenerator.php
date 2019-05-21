@@ -2,103 +2,95 @@
 
 namespace Belca\FGen\Contracts;
 
+use Belca\FGen\Contracts\FileTypeDeterminer;
+
 /**
  * Интерфейс генерации и конвертации файла
  */
 interface FileGenerator
 {
     /**
-     * Задает новую конфигурацию для обработки файла заменяя существующую.
+     * Задает конфигурацию обработки файла.
      *
-     * Конфигурация в себе хранит правила обработки, скрипты обработки.
+     * Конфигурация содержит правила обработки, скрипты обработки, список
+     * обработчиков и драйверов.
      *
-     * @param mixed $config Массив конфигурации
+     * @param mixed $config
      */
-    public function setConfig($config);
+    public function __construct($config = null, FileTypeDeterminer $fileTypeDeterminerClass);
 
     /**
-     * Добавляет новое значение конфигурации в существующую конфигурацию.
-     * Если $replace - true, то заменяет конфликтующие значения.
+     * Добавляет правила обработки файлов к существующим правилам. Если
+     * $replace - true, то заменяет существующие правила обработки.
      *
-     * @param mixed   $config  Новое значение конфигурации
-     * @param boolean $replace Замена существующей настройки
-     */
-    public function addConfig($config, $replace = true);
-
-    /**
-     * Возвращает конфигурацию. Если установлен тип конфигурации, то возвращает
-     * указанный тип.
-     *
-     * @param  string $key Тип конфигурации
-     * @return mixed
-     */
-    public function getConfig($key = null);
-
-    /**
-     * Устанавливает правила обработки файлов заменяя существующие.
-     *
-     * @param mixed $rules Правила обработки
-     */
-    public function setRules($rules);
-
-    /**
-     * Возвращает правила обработки файлов. Если указан драйвер, то возвращает
-     * правила обработки указанного драйвера.
-     *
-     * @param  string $driver Драйвер обработки файла
-     * @return mixed
-     */
-    public function getRules($driver = null);
-
-    /**
-     * Возвращает правила обработки конкретного драйвера. Если указан обработчик,
-     * то возвращает значение конкретного обработчика.
-     *
-     * @param  string $driver  Драйвер обработки файла
-     * @param  string $handler Обработчик файла
-     * @return mixed
-     */
-    public function getRule($driver, $handler = null);
-
-    /**
-     * Добавляет новые правила в текущие правила обработки файлов. Если $replace
-     * - true, то заменяет существующие правила обработки файла.
-     *
-     * @param mixed   $rules   Правила обработки файлов
-     * @param boolean $replace Замена существующих правил
+     * @param mixed   $rules
+     * @param boolean $replace
      */
     public function addRules($rules, $replace = true);
 
     /**
-     * Добавляет новое правило для указанного драйвера и обработчика. Если
+     * Добавляет правила обработки к указанному драйверу. Если
+     * $replace - true, то заменяет существующие правила обработки.
+     *
+     * @param string  $driver
+     * @param mixed   $rules
+     * @param boolean $replace
+     */
+    public function addDriverRules($driver, $rules, $replace = true);
+
+    /**
+     * Добавляет новые правила для указанного драйвера и обработчика. Если
      * $replace - true, то заменяет существующее правило, иначе объединяет
-     * значения.
+     * значения с помощью функции array_merge().
      *
      * @param string  $driver  Драйвер обработки файла
      * @param string  $handler Обработчик файла
      * @param mixed   $rules   Правила обработки файла
      * @param boolean $replace Замена существующих правил
      */
-    public function addRule($driver, $handler, $rules, $replace = true);
+    public function addHandlerRules($driver, $handler, $rules, $replace = true);
 
     /**
-     * Добавляет нового обработчика для указанного драйвера.
+     * Добавляет параметры обработки к указанному варианту обработчика.
      *
-     * @param string  $driver  Драйвер обработки файла
-     * @param string  $handler Обработчик
-     * @param boolean $replace Замена существующего обработчика
+     * @param string  $driver
+     * @param string  $handler
+     * @param string  $variant
+     * @param array   $options
+     * @param boolean $replace
      */
-    public function addHandler($driver, $handler, $replace = true);
+    public function addOptionsHanling($driver, $handler, $variant, $options, $replace = true);
 
-    // TODO конкретные типы или параметры или опции или настройки ... название надо
-    public function addOption($driver, $handler, $option, $settings, $replace = true);
+    /**
+     * Возвращает все правила обработки файлов.
+     *
+     * @return mixed
+     */
+    public function getRules();
+
+    /**
+     * Возвращает правила обработки конкретного драйвера.
+     *
+     * @param  string $driver  Драйвер обработки файла
+     * @return mixed
+     */
+    public function getRulesByDriverName($driverName);
+
+    /**
+     * Возвращает правила обработки для указанного драйвера и обработчика.
+     *
+     * @param  string $driverName
+     * @param  string $handlerName
+     * @return mixed
+     */
+    public function getRulesByHandlerName($driverName, $handlerName);
 
     /**
      * Устанавливает новый сценарии обработки файлов заменяя существующие.
      *
      * @param mixed $scripts Сценарии обработки файлов
      */
-    public function setScripts($scripts);
+    //public function setScripts($scripts);
 
     /**
      * Возвращает сценарии обработки файлов. Если указано значение $script, то
@@ -107,7 +99,7 @@ interface FileGenerator
      * @param  string $script Сценарий обработки файла
      * @return mixed
      */
-    public function getScripts($script = null);
+    //public function getScripts($script = null);
 
     /**
      * Возвращает настройки указанного сценария.
@@ -115,7 +107,7 @@ interface FileGenerator
      * @param  $name $script Название сценария
      * @return mixed
      */
-    public function getScript($script);
+    //public function getScript($script);
 
     /**
      * Добавляет новые сценарии в список сценариев. Если $replace - true, то
@@ -124,82 +116,81 @@ interface FileGenerator
      * @param mixed   $scripts Список сценариев
      * @param boolean $replace Замена существующих сценариев
      */
-    public function addScripts($scripts, $replace = true);
+    /*public function addScripts($scripts, $replace = true);
 
-    public function addScript($name, $script, $replace = true);
+    public function addScript($name, $script, $replace = true);*/
 
-    public function setDrivers($drivers);
 
-    public function getDrivers($driver = null);
+    /**
+     * Добавляет новые связи между списком драйверов и обрабатываемыми
+     * типами файлов.
+     *
+     * @param mixed $relations Массиов связей драйверов и типов файлов.
+     */
+    public function addRelations($relations, $replace = true);
 
-    public function getDriver($driver);
+    /**
+     * Добавляет указанные типы файлов к указанному драйверу.
+     *
+     * @param string  $driverName
+     * @param array   $types
+     * @param boolean $replace
+     */
+    public function addFileTypes($driverName, $types, $replace = true);
 
-    public function addDrivers($drivers, $replace = true);
+    /**
+     * Добавляет новый тип файла к указанному драйверу.
+     *
+     * @param string  $driverName
+     * @param string  $type
+     * @param boolean $replace
+     */
+    public function addFileType($driverName, $type, $replace = true);
 
-    public function addDriver($name, $driver, $replace = true);
+    /**
+     * Возвращает связи драйверов с типами файлов.
+     *
+     * @return mixed
+     */
+    public function getRelations();
+
+    /**
+     * Возвращает связи указанного драйвера с типами файлов.
+     *
+     * @param  string $driverName
+     * @return array|null
+     */
+    public function getRelation($driverName);
 
     /**
      * Возвращает имя драйвера по указанному типу файла.
      *
      * @param  string $type Тип файла
-     * @return string
+     * @return string|null
      */
     public function getDriverNameByFileType($type);
 
     /**
-     * Задает новые связи между списком драйверов и обрабатываемыми типами файлов.
-     *
-     * @param mixed $relations Массиов связей драйверов и типов файлов.
-     */
-    public function setRalations($relations);
-
-
-    public function addRelation($relation, $replace = true);
-
-    public function addFileTypes($driverName, $types, $replace = true);
-
-    public function addFileType($driverName, $type, $replace = true);
-
-    /**
-     * Возвращает связи драйверов с типами файлов. Если указан конкретный драйвер,
-     * то возвращает его список связей.
-     *
-     * @param  string $driverName Название драйвера
-     * @return mixed
-     */
-    public function getRalations($driverName = null);
-
-    /**
-     * Возвращает связи указанного драйвера с типами файлов.
-     *
-     * @param  string $driverName Название драйвера
-     * @return mixed
-     */
-    public function getRalation($driverName);
-
-    /**
-     * Задает новых Инспекторов для проверки типов файлов.
+     * Добавляет новых Инспекторов для проверки типов файлов.
      *
      * @param mixed $inspectors Массив Инспекторов
      */
-    public function setInspectors($inspectors);
+    public function addInspectors($inspectors, $replace = true);
 
     /**
      * Задает указанному драйверу нового Инспектора.
      *
-     * @param string $driverName Имя драйвера
-     * @param string $className  Имя класса-инспектора
+     * @param string $driverName
+     * @param string $className
      */
-    public function addInspector($driverName, $className);
+    public function addInspector($driverName, $className, $replace = true);
 
     /**
-     * Возвращает Инспекторов файлов. Если указано имя драйвера, то возвращает
-     * инспектора принадлежащему этому драйверу.
+     * Возвращает Инспекторов файлов.
      *
-     * @param  string $driverName Имя драйвера
      * @return mixed
      */
-    public function getInspectors($driverName = null);
+    public function getInspectors();
 
     /**
      * Возвращает класс Инспектора в соответствии с указанным драйвером.
@@ -210,54 +201,55 @@ interface FileGenerator
     public function getInspector($driverName);
 
     /**
-     * Задает новые обработчики файла заменяя предыдущие.
+     * Проверяет, является ли класс обработчиком.
      *
-     * @param mixed $handlers Массив обработчиков
+     * @param  string  $className
+     * @return boolean
      */
-    public function setHandlers($handlers);
-
-    /**
-     * Возвращает список обработчиков файла. Если указано имя драйвера, то
-     * возвращает обработчики конкретного драйвера.
-     *
-     * @param  string $driverName Имя драйвера
-     * @return mixed
-     */
-    public function getHandlers($driverName = null);
-
-    /**
-     * Возвращает список обработчиков указанного драйвера.
-     *
-     * @param  string $driverName Имя драйвера
-     * @return mixed
-     */
-    public function getHandlersByDriverName($driverName);
+    public static function isHandler($className);
 
     /**
      * Добавляет новые обработчики файла. Если $replace - true, то заменяет
      * существующие обработчики файла.
      *
-     * @param mixed   $handlers Список обработчиков
-     * @param boolean $replace  Замена существующих обработчиков
+     * @param mixed   $handlers Список обработчиков с драйвером и именем обработчика
+     * @param boolean $replace  Заменять существующие обработчики при совпадении.
      */
     public function addHandlers($handlers, $replace = true);
 
     /**
-     * Добавляет нового обработчика к указанному драйверу.
+     * Добавляет нового обработчика для указанного драйвера.
      *
-     * @param string  $driverName Имя драйвера
-     * @param string  $className  Имя класса
+     * @param string  $driverName  Имя драйвера
+     * @param string  $handlerName Имя драйвера
+     * @param string  $className   Имя класса
+     * @param boolean $replace     Замена существующего обработчика
      */
-    public function addHandlerByDriverName($driverName, $className);
-
-    // TODO получить список вариантов обработок указанного драйвера и обработчика
+    public function addHandler($driverName, $handlerName, $className, $replace = true);
 
     /**
-     * Задает класс-определитель драйвера (типа файла).
+     * Возвращает список обработчиков файла.
      *
-     * @param string $className Имя класса
+     * @return mixed
      */
-    public function setDeterminer($className);
+    public function getHandlers();
+
+    /**
+     * Возвращает список обработчиков указанного драйвера.
+     *
+     * @param  string $driverName
+     * @return mixed
+     */
+    public function getHandlersByDriverName($driverName);
+
+    /**
+     * Возвращает класс обработчика по имени драйвера и имени обработчика.
+     *
+     * @param  string $driverName
+     * @param  string $handler
+     * @return string
+     */
+    public function getHandler($driverName, $handler, \Belca\FGen\Contracts\FileHandler $defaultHandlerClass = null);
 
     /**
      * Возвращает класс-определитель драйвера.
@@ -266,6 +258,43 @@ interface FileGenerator
      */
     public function getDeterminer();
 
-    public function file();
+    /**
+     * Возвращает правила обработки по конфигурации определенного драйвера.
+     *
+     * @param  mixed $config
+     * @return mixed
+     */
+    public static function getRulesByDriverConfig($config);
+
+    /**
+     * Вызывает обработку файла, сохраняет полученные значения и возвращает их.
+     *
+     * @param  string $filename  Путь к файлу
+     * @param  array  $config    Параметры обработки (список сценариев)
+     * @param  string $directory Директория для сохранения обработанных файлов
+     * @return mixed
+     */
+    public function file($filename, $config = [], $directory = null);
+
+    /**
+     * Запускает обработку указанного файла по указанному драйверу и
+     * правилам обработки. Сохранение новых файлов происходит в указанную
+     * директорию.
+     *
+     * @param  string $filename
+     * @param  string $driverName
+     * @param  array  $rules
+     * @param  string $directory
+     * @return mixed
+     */
+    public function handle($filename, $driverName, $rules, $directory);
+
+    /**
+     * Возвращает данные после обработки (вызова метода file()). Возвращает ту
+     * же информацию, что и метод file().
+     *
+     * @return mixed
+     */
+    public function getDataAfterHandling();
 
 }

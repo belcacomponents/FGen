@@ -1,32 +1,59 @@
 <?php
 
-namespace Belca\FGen\Contracts;
+namespace Belca\FGen;
+
+use Belca\FGen\Contracts\FileTypeDeterminer;
 
 /**
- * Интерфейс определителя типа файла.
+ * Определяет тип файла.
  */
-interface FileTypeDeterminer
+class Determiner implements FileTypeDeterminer
 {
+    protected $filename;
+
+    public function __construct($filename = null)
+    {
+        if (isset($filename)) {
+            $this->setFilename($filename);
+        }
+    }
+
     /**
-     * Если задан путь к обрабатываемому файлу, то сохраняет его для обработки.
-     *
-     * @param string $filename
+     * Запускает функцию получения данных на основе текущи
+     * @return [type] [description]
      */
-    public function __construct($filename = null);
+    protected function getInfo()
+    {
+        $this->mime = mime_content_type($this->filename);
+
+        $pathinfo = pathinfo($this->filename);
+
+        $this->extension = $pathinfo['extension'];
+    }
 
     /**
      * Задает путь к обрабатываемому файлу.
      *
-     * @param string $filename 
+     * @param string $filename
      */
-    public function setFilename($filename);
+    public function setFilename($filename)
+    {
+        if (is_file($filename)) {
+            $this->filename = $filename;
+
+            $this->getInfo();
+        }
+    }
 
     /**
      * Возвращает имя обрабатываемого файла.
      *
      * @return string
      */
-    public function getFilename();
+    public function getFilename()
+    {
+        return $this->filename;
+    }
 
     /**
      * Определяет и возвращает тип файла на основе его содержимого (тип MIME)
@@ -34,42 +61,60 @@ interface FileTypeDeterminer
      *
      * @return string
      */
-    public function getFileType();
+    public function getFileType()
+    {
+        return $this->mime;
+    }
 
     /**
      * Возвращает определенный MIME-тип файла.
      *
      * @return string
      */
-    public function getMime();
+    public function getMime()
+    {
+        return $this->mime;
+    }
 
     /**
      * Возвращает альтернативные MIME-типы и определенный.
      *
      * @return array
      */
-    public function getMimes();
+    public function getMimes()
+    {
+
+    }
 
     /**
      * Возвращает указанное расширение файла.
      *
      * @return string
      */
-    public function getExtention();
+    public function getExtention()
+    {
+        return $this->extension;
+    }
 
     /**
      * Возвращает обнаруженное расширение файла.
      *
      * @return string
      */
-    public function getDetectedExtention();
+    public function getDetectedExtention()
+    {
+
+    }
 
     /**
      * Возвращает все возможные расширения файла.
      *
      * @return array
      */
-    public function getExtentions();
+    public function getExtentions()
+    {
+        return $this->extension;
+    }
 
     /**
      * Возвращает всю информацию о файле. Если $group - true, то группирует
@@ -77,5 +122,8 @@ interface FileTypeDeterminer
      *
      * @return mixed
      */
-    public function getAll($group = true);
+    public function getAll($group = true)
+    {
+
+    }
 }

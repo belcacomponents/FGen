@@ -12,10 +12,10 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Belca\\FGen\\": "src",
-        },
-        "classmap": [
-            "src/"
-        ]
+            "Belca\\FGen\\": "src"
+        }
+    },
+    "requires": {
+        "php": ">=7.0"
     }
 }
