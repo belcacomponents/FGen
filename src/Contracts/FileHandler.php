@@ -6,13 +6,13 @@ interface FileHandler
 {
     /**
      * Выполняет обработку указанного файла по указанному методу и параметрам
-     * обработки файла. Дополнительно может быть указан режим обработки.
+     * обработки файла. Возвращает массив данных при успешной обработке,
+     * false в случае возникновения ошибки или несоответствующих данных.
      *
-     * @param  string $filename [description]
-     * @param  string $method   [description]
-     * @param  mixed  $options  [description]
-     * @param  string $mode     [description]
-     * @return [type]           [description]
+     * @param  string $filename Путь к обрабатываемому файлу
+     * @param  string $method   Запускаемый метод обработки
+     * @param  mixed  $options  Параметры обработки файла
+     * @return mixed
      */
-    public function handle($filename, $method, $options);
+    public function handle($filename, $method, $options = []);
 }

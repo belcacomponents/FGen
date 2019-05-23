@@ -8,6 +8,15 @@ use Belca\FGen\Contracts\FileTypeDeterminer;
 class FGen implements FileGenerator
 {
     /**
+     * Директория с файлом.
+     *
+     * Директорию необходимо задавать при работе с относительным путем к файлу.
+     *
+     * @var string
+     */
+    protected $directory;
+
+    /**
      * Класс-определитель типа файла.
      *
      * @var string
@@ -102,6 +111,30 @@ class FGen implements FileGenerator
         if (isset($fileTypeDeterminerClass)) {
             $this->setDeterminer($fileTypeDeterminerClass);
         }
+    }
+
+    /**
+     * Устанавливает путь директории в которой находится обрабатываемый файл.
+     * При использовании директории, необходимо указывать относительный
+     * путь к файлу.
+     *
+     * @param string $directory
+     */
+    public function setDirectory($directory = '')
+    {
+        if (is_dir($directory)) {
+            $this->directory = $directory;
+        }
+    }
+
+    /**
+     * Возвращает путь к директории с файлом.
+     *
+     * @return string
+     */
+    public function getDirectory()
+    {
+        return $this->directory ?? '';
     }
 
     /**
@@ -462,10 +495,10 @@ class FGen implements FileGenerator
     /**
      * Возвращает правила обработки по конфигурации определенного драйвера.
      *
-     * @param  mixed $config
+     * @param  mixed $script
      * @return mixed
      */
-    public static function getRulesByDriverConfig($config)
+    public static function scriptToRules($script)
     {
       // TODO на основе заданных данных получить правила обработки
       // 'jpg' => [
@@ -480,15 +513,19 @@ class FGen implements FileGenerator
      * Вызывает обработку файла.
      *
      * @param  string $filename  Путь к файлу
-     * @param  array  $config    Параметры обработки (список сценариев)
+     * @param  array  $script    Параметры обработки (список сценариев)
      * @param  string $directory Директория для сохранения обработанных файлов
      * @return mixed
      */
-    public function file($filename, $config = null, $directory = null)
+    public function file($filename, $script = null, $directory = null)
     {
         $this->data = null;
 
-        if (! is_file($filename)) {
+        $fileDirectory = $this->getDirectory();
+
+        $fullname = $fileDirectory.'/'.$filename;
+
+        if (! is_file($fullname)) {
             return false;
         }
 
@@ -496,7 +533,7 @@ class FGen implements FileGenerator
         // Если драйвер для обработки по типу файла не определен и
         // включено равенство типа и названия драйвера, то в качестве имени
         // драйвера используется тип файла.
-        $determiner = new static::$determinerClass($filename);
+        $determiner = new static::$determinerClass($fullname);
 
         $filetype = $determiner->getFileType();
 
@@ -516,15 +553,15 @@ class FGen implements FileGenerator
             $inspector = new $inspectorClass;
 
             // Если файл не прошел проверку
-            if (! $inspector->check($filename, $type)) {
+            if (! $inspector->check($fullname, $type)) {
                 return false;
             }
         }
 
         // Получаем правила обработки файла или возвращаем false.
-        if (! empty($config)) {
-            if (is_array($config)) {
-                $rules = static::getRulesByDriverConfig($config);
+        if (! empty($script)) {
+            if (is_array($script)) {
+                $rules = static::scriptToRules($script);
             } else {
                 return false;
             }
@@ -541,7 +578,7 @@ class FGen implements FileGenerator
         }
 
         if (empty($directory)) {
-            $directory = pathinfo($filename, PATHINFO_DIRNAME);
+            $directory = pathinfo($fullname, PATHINFO_DIRNAME);
         }
 
         $data = $this->handle($filename, $driverName, $rules, $directory);
@@ -564,32 +601,28 @@ class FGen implements FileGenerator
     {
         $data = [];
 
-        // Общий обработчик для одного драйвера.
-        // Используется на случай отсутствия обработчика конкретного
-        // метода обработки.
-        /*if (isset($rules['_class']) && static::isHandler($rules['_class'])) {
-            $globalHandler = $rules['_class'];
-        }*/
+        $fileDirectory = $this->getDirectory();
 
-        foreach ($rules as $handler => $handlerRules) {
+        $fullname = $fileDirectory.'/'.$filename;
+
+        if (empty($rules[$driverName]) || ! is_array($rules[$driverName])) {
+            return [];
+        }
+
+        foreach ($rules[$driverName] as $handler => $handlerRules) {
+
             // Обработчик для одного метода обработки
             $handlerClass = $this->getHandler($driverName, $handler, $rules['_class'] ?? ($handlerRules['_class'] ?? null));
 
-            // Переопределяем обработчика в соответствии с правилами обработки.
-            // На случай отсутствия обработчика в списке обработчиков или если
-            // необходимо переопределить обработчика.
-            /*if (static::isHandler($handlerRules['_class'] ?? null)) {
-                $handlerClass = $handlerRules['_class'];
-            }*/
-
             // Инициализируем обработчика и передаем данные для обрабтки
             foreach ($handlerRules as $handlerMode => $options) {
+
                 // Переопределяем обработчика конкретного метода, если это возможно
-                if (/*isset($options['_class']) && */static::isHandler($options['_class'] ?? null)) {
+                if (static::isHandler($options['_class'] ?? null)) {
                     $localHandler = $options['_class'];
                 }
 
-                $className = $handlerClass /*?? $globalHandler*/ ?? $localHandler ?? null;
+                $className = $handlerClass ?? $localHandler ?? null;
 
                 if (empty($className)) {
                     break;
@@ -608,11 +641,13 @@ class FGen implements FileGenerator
                     $method = $handler;
                 }
 
-                $this->instances[$className]->setDirectory($directory);
+                // Необходимо задать рабочий каталог и каталог для сохранения
+                $this->instances[$className]->setSourceDirectory($fileDirectory);
+                $this->instances[$className]->setFinalDirectory($directory);
                 $handlingResult = $this->instances[$className]->handle($filename, $method, $options);
-
+                
                 if ($handlingResult) {
-                    $data[$driverName][$handle][$handlerMode] = $handlingResult;
+                    $data[$driverName][$handler][$handlerMode] = $handlingResult;
                 }
             }
         }

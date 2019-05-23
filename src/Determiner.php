@@ -19,8 +19,9 @@ class Determiner implements FileTypeDeterminer
     }
 
     /**
-     * Запускает функцию получения данных на основе текущи
-     * @return [type] [description]
+     * Запускает функцию получения данных на основе текущего файла.
+     *
+     * @return void
      */
     protected function getInfo()
     {
@@ -103,7 +104,7 @@ class Determiner implements FileTypeDeterminer
      */
     public function getDetectedExtention()
     {
-
+        // TODO реализовать данный класс на основе Mimey
     }
 
     /**

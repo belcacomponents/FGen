@@ -3,27 +3,63 @@
 namespace Belca\FGen;
 
 use Belca\FGen\Contracts\FileHandler as FileHandlerInterface;
-use Belca\GeName\GeName;
 
 abstract class FHandler implements FileHandlerInterface
 {
     /**
-     * Директория для сохранения файлов.
+     * Исходная директория с исходным файлом.
      *
      * @var string
      */
-    protected $directory;
+    protected $sourceDirectory;
+
+    /**
+     * Директория для сохранения файла.
+     *
+     * @var string
+     */
+    protected $finalDirectory;
 
     protected $exceptions = ['setDirectory', 'getDirectory', 'handle'];
 
-    public function setDirectory($directory = '')
+    /**
+     * Задает исходную директорию, где хранится исходный файл.
+     *
+     * @param string $directory [description]
+     */
+    public function setSourceDirectory($directory = '')
     {
-        $this->directory = isset($directory) && is_string($directory) ? $directory : '';
+        $this->sourceDirectory = is_dir($directory) ? $directory : '';
     }
 
-    public function getDirectory()
+    /**
+     * Возвращает исходную директорию.
+     *
+     * @return string
+     */
+    public function getSourceDirectory()
     {
-        return $this->directory ?? '';
+        return $this->sourceDirectory ?? '';
+    }
+
+    /**
+     * Задает директорию для сохранения файла.
+     *
+     * @param string $directory
+     */
+    public function setFinalDirectory($directory)
+    {
+        $this->finalDirectory = is_dir($directory) ? $directory : '';
+    }
+
+    /**
+     * Возвращает директорию для сохранения файла.
+     *
+     * @return string
+     */
+    public function getFinalDirectory()
+    {
+        return $this->finalDirectory ?? $this->getSourceDirectory();
     }
 
     /**
@@ -36,5 +72,5 @@ abstract class FHandler implements FileHandlerInterface
      * @param  mixed  $options  Параметры обработки файла
      * @return mixed
      */
-    abstract public function handle($filename, $method, $options);
+    abstract public function handle($filename, $method, $options = []);
 }

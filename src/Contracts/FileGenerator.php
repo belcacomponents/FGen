@@ -20,6 +20,22 @@ interface FileGenerator
     public function __construct($config = null, FileTypeDeterminer $fileTypeDeterminerClass);
 
     /**
+     * Устанавливает путь директории в которой находится обрабатываемый файл.
+     * При использовании директории, необходимо указывать относительный
+     * путь к файлу.
+     *
+     * @param string $directory
+     */
+    public function setDirectory($directory = '');
+
+    /**
+     * Возвращает путь к директории с файлом.
+     *
+     * @return string
+     */
+    public function getDirectory();
+
+    /**
      * Добавляет правила обработки файлов к существующим правилам. Если
      * $replace - true, то заменяет существующие правила обработки.
      *
@@ -259,22 +275,22 @@ interface FileGenerator
     public function getDeterminer();
 
     /**
-     * Возвращает правила обработки по конфигурации определенного драйвера.
+     * Конвертирует сценарий обработки файла в правила обработки файла.
      *
-     * @param  mixed $config
+     * @param  mixed $script
      * @return mixed
      */
-    public static function getRulesByDriverConfig($config);
+    public static function scriptToRules($script);
 
     /**
      * Вызывает обработку файла, сохраняет полученные значения и возвращает их.
      *
      * @param  string $filename  Путь к файлу
-     * @param  array  $config    Параметры обработки (список сценариев)
+     * @param  array  $script    Параметры обработки (список сценариев)
      * @param  string $directory Директория для сохранения обработанных файлов
      * @return mixed
      */
-    public function file($filename, $config = [], $directory = null);
+    public function file($filename, $script = [], $directory = null);
 
     /**
      * Запускает обработку указанного файла по указанному драйверу и
